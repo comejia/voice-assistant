@@ -1,7 +1,11 @@
+import logging
+
 import pyaudio
 
 from .audio_config import AudioConfig
 from .microphone import Microphone
+
+logger = logging.getLogger(__name__)
 
 
 class PyAudioMicrophone(Microphone):
@@ -18,6 +22,7 @@ class PyAudioMicrophone(Microphone):
             input=True,
             frames_per_buffer=self.config.chunk_size,
         )
+        logger.debug("Stream de audio iniciado")
 
     def read(self) -> bytes:
         return self.stream.read(
