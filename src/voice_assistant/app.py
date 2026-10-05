@@ -1,14 +1,19 @@
+import logging
+import os
+
 import openwakeword
 import pyaudio
+from dotenv import load_dotenv
 
 from voice_assistant.voice.audio_config import AudioConfig
 from voice_assistant.voice.pyaudio_microphone import PyAudioMicrophone
 from voice_assistant.wake_word.open_wake_word import OpenWakeWord
 from voice_assistant.wake_word.wake_word_config import WakeWordConfig
 
+logger = logging.getLogger(__name__)
 
-def run():
 
+def run() -> None:
     openwakeword.utils.download_models()
 
     audio_config = AudioConfig(
@@ -24,15 +29,15 @@ def run():
     try:
         microphone.start()
 
-        print("Esperando wake word...")
+        logger.info("Esperando wake word...")
 
         while True:
             audio = microphone.read()
-            print(f"Chunk recibido: {len(audio)} bytes")
+            logger.debug("Chunk recibido: %d bytes", len(audio))
 
             if wake_word.detect(audio):
-                print("Wake word detectada!")
-                print("Saliendo del programa...")
+                logger.info("Wake word detectada!")
+                logger.info("Saliendo del programa...")
                 break
 
     except KeyboardInterrupt:
@@ -40,8 +45,20 @@ def run():
 
     finally:
         microphone.close()
-        print("Micrófono cerrado")
+        logger.info("Micrófono cerrado")
+
+
+def main() -> None:
+    load_dotenv()
+
+    logging.basicConfig(
+        level=logging.WARNING,  # Las librerías de terceros quedan en WARNING.
+        format="%(asctime)s %(name)s %(levelname)s %(message)s",
+    )
+    log_level = os.getenv("LOG_LEVEL", "DEBUG").upper()
+    logging.getLogger("voice_assistant").setLevel(log_level)
+    run()
 
 
 if __name__ == "__main__":
-    run()
+    main()
