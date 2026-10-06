@@ -26,3 +26,12 @@ dev = [
     "pre-commit>=4.6.2",
     "pytest>=9.1.1",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "integration: pruebas que requieren hardware o datos reales (micrófono, archivos de audio)",
+]
+# Por defecto se excluyen las pruebas de integración.
+# Para ejecutarlas: pytest -m integration
+addopts = "-m 'not integration'"

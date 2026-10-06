@@ -1,7 +1,10 @@
+import pytest
+
 from voice_assistant.voice.audio_config import AudioConfig
 from voice_assistant.voice.pyaudio_microphone import PyAudioMicrophone
 
 
+@pytest.mark.integration
 def test_microphone_reads_audio(audio_config: AudioConfig):
     microphone = PyAudioMicrophone(audio_config)
 
