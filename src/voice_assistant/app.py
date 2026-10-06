@@ -5,10 +5,8 @@ import openwakeword
 import pyaudio
 from dotenv import load_dotenv
 
-from voice_assistant.voice.audio_config import AudioConfig
-from voice_assistant.voice.pyaudio_microphone import PyAudioMicrophone
-from voice_assistant.wake_word.open_wake_word import OpenWakeWord
-from voice_assistant.wake_word.wake_word_config import WakeWordConfig
+from voice_assistant.voice import AudioConfig, PyAudioMicrophone
+from voice_assistant.wake_word import OpenWakeWord, WakeWordConfig
 
 logger = logging.getLogger(__name__)
 

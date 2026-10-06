@@ -1,8 +1,8 @@
 import pyaudio
 import pytest
 
-from voice_assistant.voice.audio_config import AudioConfig
-from voice_assistant.wake_word.wake_word_config import WakeWordConfig
+from voice_assistant.voice import AudioConfig
+from voice_assistant.wake_word import WakeWordConfig
 
 
 @pytest.fixture

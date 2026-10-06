@@ -5,9 +5,8 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-from voice_assistant.voice.audio_config import AudioConfig
-from voice_assistant.wake_word.open_wake_word import OpenWakeWord
-from voice_assistant.wake_word.wake_word_config import WakeWordConfig
+from voice_assistant.voice import AudioConfig
+from voice_assistant.wake_word import OpenWakeWord, WakeWordConfig
 
 MIC_TEST_WAV = Path(__file__).resolve().parent.parent / "mic_test.wav"
 
