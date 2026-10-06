@@ -20,8 +20,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0            # historial completo: PSR analiza todos los commits
-          fetch-tags: true          # traer los tags: PSR necesita el último para calcular la base
-          ref: ${{ github.ref_name }}
+
+      - name: Fetch tags
+        run: git fetch --tags --force   # asegurar los tags anotados (PSR los usa como base)
 
       - name: Python Semantic Release
         uses: python-semantic-release/python-semantic-release@v10
