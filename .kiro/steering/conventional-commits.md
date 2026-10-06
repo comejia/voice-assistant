@@ -24,4 +24,4 @@ La primera línea debe seguir este formato exacto:
 1. **Longitud:** La primera línea no debe superar los 50 caracteres.
 2. **Gramática:** Usar el verbo principal en modo imperativo y en español (ej: "añadir", "corregir", "eliminar", "actualizar").
 3. **Estilo:** La descripción debe comenzar en minúscula y NO debe incluir un punto final.
-4. **Seguridad:** Proponé el mensaje de commit en texto, pero nunca ejecutes comandos destructivos o envíos remotos (`git push`) de forma automática sin que yo te lo autorice explícitamente.
+4. **Seguridad:** Nunca ejecutes comandos destructivos o envíos remotos (`git push`) de forma automática sin que yo te lo autorice explícitamente.
