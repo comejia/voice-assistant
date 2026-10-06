@@ -5,12 +5,15 @@ de integración del wake word).
 """
 
 import wave
+from pathlib import Path
 
 import pyaudio
 
 from voice_assistant.voice import AudioConfig, PyAudioMicrophone
 
-OUTPUT_FILE = "mic_test.wav"
+# Guardar en la raíz del repo, donde el test de integración busca el audio,
+# sin depender del directorio desde el que se ejecute el script.
+OUTPUT_FILE = Path(__file__).resolve().parents[3] / "mic_test.wav"
 FRAMES_TO_RECORD = 100  # ~8 s con chunk_size=1280 a 16 kHz
 
 
