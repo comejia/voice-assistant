@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.1.2 (2026-10-06)
+
+### Bug Fixes
+
+- **scripts**: Guardar audio en la raíz del repo
+  ([`56e20c8`](https://github.com/comejia/voice-assistant/commit/56e20c82cbb359a001fe510be527e08faf618e5a))
+
+### Continuous Integration
+
+- **release**: Simplificar checkout del workflow
+  ([`052afda`](https://github.com/comejia/voice-assistant/commit/052afda07178cb502fc009694f571a95aa954a16))
+
+
 ## v0.1.1 (2026-10-06)
 
 ### Bug Fixes
