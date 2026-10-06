@@ -1,23 +1,44 @@
+"""Script de utilidad para grabar audio del micrófono a un archivo WAV.
+
+Útil para generar audios de prueba (p. ej. ``mic_test.wav`` para los tests
+de integración del wake word).
+"""
+
 import wave
 
 import pyaudio
 
-from voice_assistant.voice.audio_config import AudioConfig
-from voice_assistant.voice.pyaudio_microphone import PyAudioMicrophone
+from voice_assistant.voice import AudioConfig, PyAudioMicrophone
 
-audio_config = AudioConfig(sample_rate=16_000, channels=1, format=pyaudio.paInt16, chunk_size=1280)
+OUTPUT_FILE = "mic_test.wav"
+FRAMES_TO_RECORD = 100  # ~8 s con chunk_size=1280 a 16 kHz
 
-microphone = PyAudioMicrophone(config=audio_config)
-microphone.start()
 
-frames = []
+def main() -> None:
+    audio_config = AudioConfig(
+        sample_rate=16_000, channels=1, format=pyaudio.paInt16, chunk_size=1280
+    )
 
-for _ in range(100):
-    audio = microphone.read()
-    frames.append(audio)
+    microphone = PyAudioMicrophone(config=audio_config)
+    frames = []
 
-with wave.open("mic_test.wav", "wb") as wav:
-    wav.setnchannels(1)
-    wav.setsampwidth(2)
-    wav.setframerate(16000)
-    wav.writeframes(b"".join(frames))
+    try:
+        microphone.start()
+        print(f"Grabando {FRAMES_TO_RECORD} frames...")
+
+        for _ in range(FRAMES_TO_RECORD):
+            frames.append(microphone.read())
+    finally:
+        microphone.close()
+
+    with wave.open(OUTPUT_FILE, "wb") as wav:
+        wav.setnchannels(audio_config.channels)
+        wav.setsampwidth(pyaudio.get_sample_size(audio_config.format))
+        wav.setframerate(audio_config.sample_rate)
+        wav.writeframes(b"".join(frames))
+
+    print(f"Audio guardado en {OUTPUT_FILE}")
+
+
+if __name__ == "__main__":
+    main()
