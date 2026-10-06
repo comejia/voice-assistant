@@ -12,4 +12,4 @@ def audio_config():
 
 @pytest.fixture
 def word_config():
-    return WakeWordConfig(model_path="alexa", wake_word="alexa", inference_framework="tflite")
+    return WakeWordConfig(model="alexa", wake_word="alexa", inference_framework="tflite")

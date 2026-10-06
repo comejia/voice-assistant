@@ -20,7 +20,7 @@ def run() -> None:
         sample_rate=16_000, channels=1, format=pyaudio.paInt16, chunk_size=1280
     )
     wake_word_config = WakeWordConfig(
-        model_path="alexa", wake_word="alexa", inference_framework="tflite"
+        model="alexa", wake_word="alexa", inference_framework="tflite"
     )
 
     microphone = PyAudioMicrophone(config=audio_config)
