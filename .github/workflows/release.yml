@@ -19,10 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0            # historial completo: PSR analiza todos los commits
-
-      - name: Fetch tags
-        run: git fetch --tags --force   # asegurar los tags anotados (PSR los usa como base)
+          fetch-depth: 0            # historial completo + tags: PSR los necesita para calcular la versión
 
       - name: Python Semantic Release
         uses: python-semantic-release/python-semantic-release@v10
