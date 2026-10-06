@@ -36,3 +36,17 @@ markers = [
 # Por defecto se excluyen las pruebas de integración.
 # Para ejecutarlas: pytest -m integration
 addopts = "-m 'not integration'"
+
+[tool.semantic_release]
+# La versión vive únicamente en pyproject.toml.
+version_toml = ["pyproject.toml:project.version"]
+# Tras actualizar la versión, re-sincronizar y re-stagear el uv.lock.
+# (La acción corre en Docker sin uv, por eso se instala primero.)
+build_command = """
+    pip install uv
+    uv lock --upgrade-package "$PACKAGE_NAME"
+    git add uv.lock
+"""
+
+[tool.semantic_release.branches.main]
+match = "main"

@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+# Evita que dos releases corran a la vez.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # necesario para pushear el commit de versión, el tag y crear el Release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # historial completo: PSR analiza todos los commits
+          ref: ${{ github.ref_name }}
+
+      - name: Python Semantic Release
+        uses: python-semantic-release/python-semantic-release@v10
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
