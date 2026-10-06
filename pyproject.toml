@@ -40,6 +40,8 @@ addopts = "-m 'not integration'"
 [tool.semantic_release]
 # La versión vive únicamente en pyproject.toml.
 version_toml = ["pyproject.toml:project.version"]
+# Permitir versiones 0.x: un patch/minor NO salta a 1.0.0 prematuramente.
+allow_zero_version = true
 # Tras actualizar la versión, re-sincronizar y re-stagear el uv.lock.
 # (La acción corre en Docker sin uv, por eso se instala primero.)
 build_command = """
