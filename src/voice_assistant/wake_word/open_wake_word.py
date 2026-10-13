@@ -18,7 +18,10 @@ class OpenWakeWord(WakeWord):
 
     def __init__(self, wake_word_config: WakeWordConfig):
         self.config = wake_word_config
-        self.model = Model(wakeword_models=[self.config.model])
+        self.model = Model(
+            wakeword_models=[self.config.model],
+            inference_framework=self.config.inference_framework,
+        )
         logger.debug("Modelo de wake word cargado: %s", self.config.model)
         self._warmup()
 

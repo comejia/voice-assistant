@@ -52,9 +52,13 @@ Las variables de entorno se cargan desde un archivo `.env`:
 cp .env.example .env
 ```
 
-| Variable    | Descripción                                        | Valor por defecto |
-|-------------|----------------------------------------------------|-------------------|
-| `LOG_LEVEL` | Nivel de logging (`DEBUG`, `INFO`, `WARNING`, ...) | `DEBUG`           |
+| Variable              | Descripción                                                     | Valor por defecto |
+|-----------------------|-----------------------------------------------------------------|-------------------|
+| `LOG_LEVEL`           | Nivel de logging (`DEBUG`, `INFO`, `WARNING`, ...)              | `DEBUG`           |
+| `WAKE_WORD_MODEL`     | Modelo preentrenado (`alexa`, `hey_jarvis`, ...) o ruta a `.tflite` custom | `alexa` |
+| `WAKE_WORD_NAME`      | Nombre de la wake word (key del modelo; archivo sin extensión si es custom) | `alexa` |
+| `WAKE_WORD_INFERENCE_FRAMEWORK` | Framework según el formato del modelo: `tflite` u `onnx` | `tflite` |
+| `WAKE_WORD_THRESHOLD` | Umbral de confianza para activar (`0.0`–`1.0`)                  | `0.5`             |
 
 ## 🧪 Tests
 

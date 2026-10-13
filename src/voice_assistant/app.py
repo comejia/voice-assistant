@@ -17,8 +17,15 @@ def run() -> None:
     audio_config = AudioConfig(
         sample_rate=16_000, channels=1, format=pyaudio.paInt16, chunk_size=1280
     )
+    # El modelo puede ser un nombre preentrenado de openwakeword (p. ej. "alexa",
+    # "hey_jarvis") o la ruta a un .tflite custom (p. ej. "models/hola_deby.tflite").
+    # Para un modelo custom, WAKE_WORD_NAME debe coincidir con la key que devuelve
+    # model.predict(), que es el nombre del archivo sin extensión ("hola_deby").
     wake_word_config = WakeWordConfig(
-        model="alexa", wake_word="alexa", inference_framework="tflite"
+        model=os.getenv("WAKE_WORD_MODEL", "alexa"),
+        wake_word=os.getenv("WAKE_WORD_NAME", "alexa"),
+        inference_framework=os.getenv("WAKE_WORD_INFERENCE_FRAMEWORK", "tflite"),
+        threshold=float(os.getenv("WAKE_WORD_THRESHOLD", "0.5")),
     )
 
     microphone = PyAudioMicrophone(config=audio_config)
