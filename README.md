@@ -60,6 +60,11 @@ cp .env.example .env
 | `WAKE_WORD_INFERENCE_FRAMEWORK` | Framework según el formato del modelo: `tflite` u `onnx` | `tflite` |
 | `WAKE_WORD_THRESHOLD` | Umbral de confianza para activar (`0.0`–`1.0`)                  | `0.5`             |
 
+## 🔑 Wake word personalizada
+
+¿Querés entrenar tu propia wake word (p. ej. *"Hola Deby"*)? Mirá
+[`docs/wake-word-training.md`](docs/wake-word-training.md).
+
 ## 🧪 Tests
 
 ```bash
