@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.2.0 (2026-10-14)
+
+### Features
+
+- **wake-word**: Configurar modelo desde entorno
+  ([`b50d68f`](https://github.com/comejia/voice-assistant/commit/b50d68f32d5fc5beb6ff7e507b46e77cd5d48355))
+
+
 ## v0.1.2 (2026-10-06)
 
 ### Bug Fixes
