@@ -8,10 +8,15 @@ authors = [
 ]
 requires-python = ">=3.11,<3.12"
 dependencies = [
+    "heed-wakeword>=0.1.4",
     "numpy<2",
     "openwakeword>=0.6.0",
     "pyaudio>=0.2.14",
     "python-dotenv>=1.2.4",
+    # Declarado explícitamente (aunque lo arrastra heed-wakeword) para forzar
+    # la variante CPU vía [tool.uv.sources]. Sin esto, uv ignora el source por
+    # ser torch una dependencia transitiva y baja la variante CUDA de PyPI.
+    "torch>=2.14.1",
 ]
 
 [project.scripts]
@@ -26,7 +31,27 @@ dev = [
     "pre-commit>=4.6.2",
     "pytest>=9.1.1",
     "ruff>=0.16.10",
+    # Extras de heed-wakeword SOLO para entrenar/exportar el modelo custom
+    # (no se usan al ejecutar el asistente). Sin 'ui' a propósito.
+    #   mic    -> grabar clips con el micrófono (record)
+    #   tts    -> síntesis Piper multi-voz (--tts-pos)
+    #   export -> exportar a ONNX/TFLite
+    # Nota: 'kokoro' se omite porque kokoro-onnx exige numpy>=2 y el proyecto
+    # está pineado a numpy<2 (restricción de openwakeword). Piper (tts) ya
+    # cubre la síntesis multi-voz.
+    "heed-wakeword[mic,tts,export]>=0.1.4",
 ]
+
+# Usar la variante CPU de PyTorch: heed-wakeword depende de torch, pero la
+# inferencia del wake word es CPU-only. Esto evita descargar el stack CUDA de
+# NVIDIA (~2 GB) que la variante por defecto de torch arrastra.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
