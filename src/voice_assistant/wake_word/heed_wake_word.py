@@ -9,6 +9,7 @@ import torch
 from heed.audio import log_mel, prepare_clip
 
 from .wake_word import WakeWord
+from .wake_word_config import WakeWordConfig
 
 logger = logging.getLogger(__name__)
 
@@ -19,43 +20,67 @@ _INT16_MAX = 32768.0
 class HeedWakeWord(WakeWord):
     """Detector de wake word con un modelo entrenado con ``heed-wakeword``.
 
-    Requiere dos archivos del export de heed:
-
-    - ``wake.onnx``: el modelo, sobre el que se infiere con ``onnxruntime``.
-    - ``wake.json``: el contrato de runtime (threshold, tamaño de ventana y
-      lógica de trigger).
-
-    El preprocesado del audio (HPF → log-mel → CMN) se delega a ``heed.audio``
-    para que coincida con el usado durante el entrenamiento.
+    Infiere con ``onnxruntime`` sobre el modelo exportado y aplica la lógica de
+    trigger (threshold, frames consecutivos, periodo refractario). El
+    preprocesado del audio (HPF → log-mel → CMN) se delega a ``heed.audio`` para
+    que coincida con el usado durante el entrenamiento.
     """
 
-    def __init__(self, model_path: str | Path, metadata_path: str | Path):
+    # Defaults de la lógica de trigger, usados si la metadata no los especifica.
+    DEFAULT_CONSECUTIVE_FRAMES = 2
+    DEFAULT_REFRACTORY_SECONDS = 0.7
+
+    def __init__(self, wake_word_config: WakeWordConfig):
         """Inicializa el detector.
 
         Args:
-            model_path: Ruta al modelo ONNX exportado (``wake.onnx``).
-            metadata_path: Ruta al contrato de runtime (``wake.json``), de donde
-                se leen el threshold, el tamaño de ventana y la lógica de trigger.
+            wake_word_config: Configuración del detector.
+
+        Raises:
+            ValueError: Si falta ``metadata_path`` o si ``wake_word`` no coincide
+                con la frase declarada en la metadata.
         """
-        meta = json.loads(Path(metadata_path).read_text())
-        self.threshold = float(meta["threshold"])
+        self.config = wake_word_config
+        if wake_word_config.metadata_path is None:
+            raise ValueError("HeedWakeWord requiere metadata_path (ruta al wake.json)")
+
+        meta = json.loads(Path(wake_word_config.metadata_path).read_text())
         self.phrase = meta.get("phrase", "")
-        # Cantidad de samples que el modelo espera por inferencia (ventana de 1 s
-        # a 16 kHz). Definido por el modelo en su contrato (wake.json).
+
+        if wake_word_config.wake_word and wake_word_config.wake_word != self.phrase:
+            raise ValueError(
+                f"La wake word esperada ({wake_word_config.wake_word!r}) no coincide "
+                f"con la del modelo ({self.phrase!r})"
+            )
+
+        self.threshold = float(
+            wake_word_config.threshold
+            if wake_word_config.threshold is not None
+            else meta["threshold"]
+        )
+        # Samples que el modelo consume por inferencia (una ventana de audio).
         self.window_samples = int(meta.get("audio_window_samples", meta["sample_rate"]))
 
         trigger = meta.get("trigger", {})
-        self.consecutive_frames = int(trigger.get("consecutive_frames", 2))
-        self.refractory_seconds = float(trigger.get("refractory_seconds", 0.7))
+        self.consecutive_frames = int(
+            trigger.get("consecutive_frames", self.DEFAULT_CONSECUTIVE_FRAMES)
+        )
+        self.refractory_seconds = float(
+            trigger.get("refractory_seconds", self.DEFAULT_REFRACTORY_SECONDS)
+        )
 
-        self.session = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
+        self.session = ort.InferenceSession(
+            str(wake_word_config.model), providers=["CPUExecutionProvider"]
+        )
         self._input_name = self.session.get_inputs()[0].name
 
-        # Ventana deslizante de audio crudo (float32).
+        # Ventana deslizante con el último segundo de audio crudo (float32).
         self._buffer = np.zeros(self.window_samples, dtype=np.float32)
         # Frames consecutivos cuya probabilidad superó el threshold.
         self._frames_above_threshold = 0
-        self._last_trigger = -1e9
+        # Momento del último trigger, para el periodo refractario. Arranca muy
+        # atrás para no bloquear la primera detección.
+        self._last_trigger = float("-inf")
 
         logger.debug("HeedWakeWord cargado: phrase=%r threshold=%.3f", self.phrase, self.threshold)
 

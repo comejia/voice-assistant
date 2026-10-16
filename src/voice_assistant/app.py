@@ -18,28 +18,33 @@ logger = logging.getLogger(__name__)
 def _build_wake_word() -> WakeWord:
     """Instancia el detector de wake word según WAKE_WORD_ENGINE.
 
-    - "openwakeword" (default): modelos preentrenados o .tflite de openwakeword.
-    - "heed": modelo custom entrenado con heed-wakeword (wake.onnx + wake.json).
+    Soporta "openwakeword" (default) y "heed". La configuración de cada motor
+    se toma de las variables de entorno WAKE_WORD_*.
     """
     engine = os.getenv("WAKE_WORD_ENGINE", "openwakeword").lower()
 
     if engine == "heed":
-        model_path = os.getenv("WAKE_WORD_MODEL", "models/wake.onnx")
-        metadata_path = os.getenv("WAKE_WORD_METADATA", "models/wake.json")
-        logger.debug("Motor de wake word: heed (%s)", model_path)
-        return HeedWakeWord(model_path=model_path, metadata_path=metadata_path)
+        threshold = os.getenv("WAKE_WORD_THRESHOLD")
+        config = WakeWordConfig(
+            model=os.getenv("WAKE_WORD_MODEL", "models/wake.onnx"),
+            metadata_path=os.getenv("WAKE_WORD_METADATA", "models/wake.json"),
+            # Opcionales: si no se indican, mandan los valores del wake.json.
+            wake_word=os.getenv("WAKE_WORD_NAME", ""),
+            threshold=float(threshold) if threshold else None,
+        )
+        logger.debug("Motor de wake word: heed (%s)", config.model)
+        return HeedWakeWord(wake_word_config=config)
 
     # Motor por defecto: openwakeword.
     import openwakeword
 
     openwakeword.utils.download_models()
-    # El modelo puede ser un nombre preentrenado de openwakeword (p. ej. "alexa",
-    # "hey_jarvis") o la ruta a un .tflite custom.
+    threshold = os.getenv("WAKE_WORD_THRESHOLD")
     wake_word_config = WakeWordConfig(
         model=os.getenv("WAKE_WORD_MODEL", "alexa"),
         wake_word=os.getenv("WAKE_WORD_NAME", "alexa"),
         inference_framework=os.getenv("WAKE_WORD_INFERENCE_FRAMEWORK", "tflite"),
-        threshold=float(os.getenv("WAKE_WORD_THRESHOLD", "0.5")),
+        threshold=float(threshold) if threshold else None,
     )
     logger.debug("Motor de wake word: openwakeword (%s)", wake_word_config.model)
     return OpenWakeWord(wake_word_config=wake_word_config)

@@ -1,6 +1,8 @@
 from unittest.mock import patch
 
-from voice_assistant.wake_word import HeedWakeWord
+import pytest
+
+from voice_assistant.wake_word import HeedWakeWord, WakeWordConfig
 
 # Metadata controlada (lo que normalmente vive en wake.json), para no depender
 # del modelo real al testear la lógica de trigger.
@@ -16,15 +18,20 @@ WORD_META = {
 CHUNK = b"\x00\x00" * 1280
 
 
-def make_detector(score: float) -> HeedWakeWord:
+def make_detector(score: float, **config_kwargs) -> HeedWakeWord:
     """Crea un HeedWakeWord con WORD_META y _infer mockeado para que devuelva
     siempre ``score``, sin cargar el wake.json ni el modelo ONNX reales."""
+    config = WakeWordConfig(
+        model="wake.onnx",
+        metadata_path="wake.json",
+        **config_kwargs,
+    )
     with (
         patch("voice_assistant.wake_word.heed_wake_word.json.loads", return_value=WORD_META),
         patch("voice_assistant.wake_word.heed_wake_word.Path.read_text", return_value="{}"),
         patch("voice_assistant.wake_word.heed_wake_word.ort.InferenceSession"),
     ):
-        detector = HeedWakeWord("wake.onnx", "wake.json")
+        detector = HeedWakeWord(config)
     detector._infer = lambda window: score
     return detector
 
@@ -63,3 +70,25 @@ def test_refractory_suprime_disparos_seguidos():
     # Dentro del periodo refractario no vuelve a disparar.
     assert detector.detect(CHUNK) is False
     assert detector.detect(CHUNK) is False
+
+
+def test_threshold_de_la_config_sobrescribe_al_metadata():
+    # WORD_META trae 0.5; la config fuerza 0.8.
+    detector = make_detector(score=0.0, threshold=0.8)
+
+    assert detector.threshold == 0.8
+
+
+def test_wake_word_que_no_coincide_falla():
+    # Si se declara una frase distinta a la del modelo, debe fallar al construir.
+    with pytest.raises(ValueError, match="no coincide"):
+        make_detector(score=0.0, wake_word="otra frase")
+
+
+def test_falta_metadata_path_falla():
+    config = WakeWordConfig(model="wake.onnx")  # sin metadata_path
+    with (
+        patch("voice_assistant.wake_word.heed_wake_word.ort.InferenceSession"),
+        pytest.raises(ValueError, match="metadata_path"),
+    ):
+        HeedWakeWord(config)
