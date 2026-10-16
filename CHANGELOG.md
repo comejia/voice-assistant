@@ -2,6 +2,30 @@
 
 <!-- version list -->
 
+## v0.3.0 (2026-10-16)
+
+### Chores
+
+- **deps**: Añadir heed-wakeword con torch CPU
+  ([`2baaf0a`](https://github.com/comejia/voice-assistant/commit/2baaf0a8f4e5cc4beebb5ad3d932ccf701ebe1b4))
+
+### Features
+
+- **wake-word**: Añadir modelo custom "hola deby"
+  ([`da016cc`](https://github.com/comejia/voice-assistant/commit/da016cc35764fb38e2b5cbfb0692d609eef2d34e))
+
+- **wake-word**: Integrar motor heed
+  ([`f1002c6`](https://github.com/comejia/voice-assistant/commit/f1002c63f2746d334266a1e42701525bd96dbf25))
+
+### Refactoring
+
+- **tests**: Fixture de micrófono con teardown
+  ([`93ba531`](https://github.com/comejia/voice-assistant/commit/93ba531658b2c9b7298fb3e1cb19ade1aba2e33b))
+
+- **wake-word**: Unificar config en WakeWordConfig
+  ([`42107f8`](https://github.com/comejia/voice-assistant/commit/42107f84b20592a6f7dbecf326d37d7677c1cc3a))
+
+
 ## v0.2.0 (2026-10-14)
 
 ### Features
