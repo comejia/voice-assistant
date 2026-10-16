@@ -52,13 +52,28 @@ Las variables de entorno se cargan desde un archivo `.env`:
 cp .env.example .env
 ```
 
+El asistente soporta dos motores de wake word, seleccionables con
+`WAKE_WORD_ENGINE`:
+
+- `openwakeword` (default): modelos preentrenados (`alexa`, `hey_jarvis`, ...)
+  o `.tflite` custom.
+- `heed`: modelo custom entrenado con heed (ver
+  [`docs/wake-word-training.md`](docs/wake-word-training.md)).
+
 | Variable              | Descripción                                                     | Valor por defecto |
 |-----------------------|-----------------------------------------------------------------|-------------------|
 | `LOG_LEVEL`           | Nivel de logging (`DEBUG`, `INFO`, `WARNING`, ...)              | `DEBUG`           |
-| `WAKE_WORD_MODEL`     | Modelo preentrenado (`alexa`, `hey_jarvis`, ...) o ruta a `.tflite` custom | `alexa` |
-| `WAKE_WORD_NAME`      | Nombre de la wake word (key del modelo; archivo sin extensión si es custom) | `alexa` |
-| `WAKE_WORD_INFERENCE_FRAMEWORK` | Framework según el formato del modelo: `tflite` u `onnx` | `tflite` |
-| `WAKE_WORD_THRESHOLD` | Umbral de confianza para activar (`0.0`–`1.0`)                  | `0.5`             |
+| `WAKE_WORD_ENGINE`    | Motor de detección: `openwakeword` o `heed`                     | `openwakeword`    |
+| `WAKE_WORD_MODEL`     | Modelo: nombre preentrenado / ruta a `.tflite` (openwakeword) o ruta al `.onnx` (heed) | `alexa` |
+| `WAKE_WORD_NAME`      | (openwakeword) Nombre de la wake word (key del modelo)          | `alexa`           |
+| `WAKE_WORD_INFERENCE_FRAMEWORK` | (openwakeword) Framework del modelo: `tflite` u `onnx` | `tflite`     |
+| `WAKE_WORD_THRESHOLD` | (openwakeword) Umbral de confianza (`0.0`–`1.0`)                | `0.5`             |
+| `WAKE_WORD_METADATA`  | (heed) Ruta al `wake.json` (incluye el threshold)               | `models/wake.json`|
+
+## 🔑 Wake word personalizada
+
+¿Querés entrenar tu propia wake word (p. ej. *"Hola Deby"*)? Mirá
+[`docs/wake-word-training.md`](docs/wake-word-training.md).
 
 ## 🧪 Tests
 

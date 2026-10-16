@@ -14,3 +14,8 @@ wheels/
 
 # Audio
 *.wav
+
+# Proyectos de entrenamiento de wake word (heed): grabaciones, modelos .pt,
+# cache TTS, exports. Solo se versiona el modelo final en models/.
+/hola_deby/
+

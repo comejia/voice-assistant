@@ -1,35 +1,62 @@
 import logging
 import os
 
-import openwakeword
 import pyaudio
 from dotenv import load_dotenv
 
 from voice_assistant.voice import AudioConfig, PyAudioMicrophone
-from voice_assistant.wake_word import OpenWakeWord, WakeWordConfig
+from voice_assistant.wake_word import (
+    HeedWakeWord,
+    OpenWakeWord,
+    WakeWord,
+    WakeWordConfig,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def run() -> None:
-    openwakeword.utils.download_models()
+def _build_wake_word() -> WakeWord:
+    """Instancia el detector de wake word según WAKE_WORD_ENGINE.
 
-    audio_config = AudioConfig(
-        sample_rate=16_000, channels=1, format=pyaudio.paInt16, chunk_size=1280
-    )
-    # El modelo puede ser un nombre preentrenado de openwakeword (p. ej. "alexa",
-    # "hey_jarvis") o la ruta a un .tflite custom (p. ej. "models/hola_deby.tflite").
-    # Para un modelo custom, WAKE_WORD_NAME debe coincidir con la key que devuelve
-    # model.predict(), que es el nombre del archivo sin extensión ("hola_deby").
+    Soporta "openwakeword" (default) y "heed". La configuración de cada motor
+    se toma de las variables de entorno WAKE_WORD_*.
+    """
+    engine = os.getenv("WAKE_WORD_ENGINE", "openwakeword").lower()
+
+    if engine == "heed":
+        threshold = os.getenv("WAKE_WORD_THRESHOLD")
+        config = WakeWordConfig(
+            model=os.getenv("WAKE_WORD_MODEL", "models/wake.onnx"),
+            metadata_path=os.getenv("WAKE_WORD_METADATA", "models/wake.json"),
+            # Opcionales: si no se indican, mandan los valores del wake.json.
+            wake_word=os.getenv("WAKE_WORD_NAME", ""),
+            threshold=float(threshold) if threshold else None,
+        )
+        logger.debug("Motor de wake word: heed (%s)", config.model)
+        return HeedWakeWord(wake_word_config=config)
+
+    # Motor por defecto: openwakeword.
+    import openwakeword
+
+    openwakeword.utils.download_models()
+    threshold = os.getenv("WAKE_WORD_THRESHOLD")
     wake_word_config = WakeWordConfig(
         model=os.getenv("WAKE_WORD_MODEL", "alexa"),
         wake_word=os.getenv("WAKE_WORD_NAME", "alexa"),
         inference_framework=os.getenv("WAKE_WORD_INFERENCE_FRAMEWORK", "tflite"),
-        threshold=float(os.getenv("WAKE_WORD_THRESHOLD", "0.5")),
+        threshold=float(threshold) if threshold else None,
+    )
+    logger.debug("Motor de wake word: openwakeword (%s)", wake_word_config.model)
+    return OpenWakeWord(wake_word_config=wake_word_config)
+
+
+def run() -> None:
+    audio_config = AudioConfig(
+        sample_rate=16_000, channels=1, format=pyaudio.paInt16, chunk_size=1280
     )
 
     microphone = PyAudioMicrophone(config=audio_config)
-    wake_word = OpenWakeWord(wake_word_config=wake_word_config)
+    wake_word = _build_wake_word()
 
     try:
         microphone.start()

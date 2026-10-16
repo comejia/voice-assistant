@@ -1,13 +1,21 @@
 import pyaudio
 import pytest
 
-from voice_assistant.voice import AudioConfig
+from voice_assistant.voice import AudioConfig, PyAudioMicrophone
 from voice_assistant.wake_word import WakeWordConfig
 
 
 @pytest.fixture
 def audio_config():
     return AudioConfig(sample_rate=16_000, channels=1, format=pyaudio.paInt16, chunk_size=1280)
+
+
+@pytest.fixture
+def microphone(audio_config: AudioConfig):
+    mic = PyAudioMicrophone(audio_config)
+    mic.start()
+    yield mic
+    mic.close()
 
 
 @pytest.fixture

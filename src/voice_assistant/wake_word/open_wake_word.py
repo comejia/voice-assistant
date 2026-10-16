@@ -12,12 +12,20 @@ logger = logging.getLogger(__name__)
 class OpenWakeWord(WakeWord):
     WARMUP_FRAMES = 30
 
+    # Umbral usado cuando la config no especifica uno.
+    DEFAULT_THRESHOLD = 0.5
+
     # openwakeword espera audio PCM de 16 bits (formato con el que se
     # entrenaron los modelos). No es configurable: es un requisito de la librería.
     AUDIO_DTYPE = np.int16
 
     def __init__(self, wake_word_config: WakeWordConfig):
         self.config = wake_word_config
+        self.threshold = (
+            wake_word_config.threshold
+            if wake_word_config.threshold is not None
+            else self.DEFAULT_THRESHOLD
+        )
         self.model = Model(
             wakeword_models=[self.config.model],
             inference_framework=self.config.inference_framework,
@@ -45,4 +53,4 @@ class OpenWakeWord(WakeWord):
         score = predictions[self.config.wake_word]
         logger.debug("Score '%s': %.4f", self.config.wake_word, score)
 
-        return score > self.config.threshold
+        return score > self.threshold
