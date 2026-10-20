@@ -72,6 +72,19 @@ def test_refractory_suprime_disparos_seguidos():
     assert detector.detect(CHUNK) is False
 
 
+def test_reset_limpia_el_estado_acumulado():
+    # Tras resetear, los frames consecutivos previos no deben contar: vuelve a
+    # hacer falta la secuencia completa para disparar.
+    detector = make_detector(score=0.9)
+
+    detector.detect(CHUNK)  # 1er frame sobre el umbral (aún no dispara)
+    detector.reset()
+
+    # Si el estado se limpió, este frame es "el primero" otra vez y no dispara.
+    assert detector.detect(CHUNK) is False
+    assert detector.detect(CHUNK) is True
+
+
 def test_threshold_de_la_config_sobrescribe_al_metadata():
     # WORD_META trae 0.5; la config fuerza 0.8.
     detector = make_detector(score=0.0, threshold=0.8)

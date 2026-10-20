@@ -70,6 +70,22 @@ El asistente soporta dos motores de wake word, seleccionables con
 | `WAKE_WORD_THRESHOLD` | (openwakeword) Umbral de confianza (`0.0`–`1.0`)                | `0.5`             |
 | `WAKE_WORD_METADATA`  | (heed) Ruta al `wake.json` (incluye el threshold)               | `models/wake.json`|
 
+### 📝 Speech-to-Text
+
+El asistente transcribe el comando con
+[faster-whisper](https://github.com/SYSTRAN/faster-whisper) (Whisper sobre
+CTranslate2), 100% local. El modelo se descarga automáticamente a
+`STT_DOWNLOAD_ROOT` la primera vez y se cachea para los siguientes arranques.
+
+| Variable              | Descripción                                                     | Valor por defecto |
+|-----------------------|-----------------------------------------------------------------|-------------------|
+| `STT_MODEL`           | Modelo Whisper (`tiny`, `base`, `small`, `medium`, `large-v3`)  | `tiny`            |
+| `STT_DEVICE`          | Dispositivo de inferencia (`cpu`, `cuda`, `auto`)               | `cpu`             |
+| `STT_COMPUTE_TYPE`    | Precisión numérica (`int8` recomendado en CPU, `float16`, ...)  | `int8`            |
+| `STT_DOWNLOAD_ROOT`   | Directorio donde se descarga/cachea el modelo                   | `models/whisper`  |
+| `STT_LANGUAGE`        | Idioma (`es`, `en`, ...). Vacío = detección automática          | `es`              |
+| `STT_COMMAND_SECONDS` | Segundos de audio a capturar tras la wake word                  | `5`               |
+
 ## 🔑 Wake word personalizada
 
 ¿Querés entrenar tu propia wake word (p. ej. *"Hola Deby"*)? Mirá

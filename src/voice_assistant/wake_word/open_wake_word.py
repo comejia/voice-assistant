@@ -54,3 +54,7 @@ class OpenWakeWord(WakeWord):
         logger.debug("Score '%s': %.4f", self.config.wake_word, score)
 
         return score > self.threshold
+
+    def reset(self) -> None:
+        self.model.reset()
+        self._warmup()

@@ -4,6 +4,11 @@ import os
 import pyaudio
 from dotenv import load_dotenv
 
+from voice_assistant.speech_to_text import (
+    FasterWhisperSTT,
+    SpeechToText,
+    SpeechToTextConfig,
+)
 from voice_assistant.voice import AudioConfig, PyAudioMicrophone
 from voice_assistant.wake_word import (
     HeedWakeWord,
@@ -50,6 +55,24 @@ def _build_wake_word() -> WakeWord:
     return OpenWakeWord(wake_word_config=wake_word_config)
 
 
+def _build_speech_to_text() -> SpeechToText:
+    """Instancia el motor de speech-to-text.
+
+    La configuración se toma de las variables de entorno STT_*. Actualmente solo
+    hay un motor disponible (faster-whisper).
+    """
+    language = os.getenv("STT_LANGUAGE") or None
+    config = SpeechToTextConfig(
+        model=os.getenv("STT_MODEL", "tiny"),
+        device=os.getenv("STT_DEVICE", "cpu"),
+        compute_type=os.getenv("STT_COMPUTE_TYPE", "int8"),
+        download_root=os.getenv("STT_DOWNLOAD_ROOT", "models/whisper"),
+        language=language,
+    )
+    logger.debug("Motor de speech-to-text: faster-whisper (%s)", config.model)
+    return FasterWhisperSTT(config=config)
+
+
 def run() -> None:
     audio_config = AudioConfig(
         sample_rate=16_000, channels=1, format=pyaudio.paInt16, chunk_size=1280
@@ -57,6 +80,12 @@ def run() -> None:
 
     microphone = PyAudioMicrophone(config=audio_config)
     wake_word = _build_wake_word()
+    speech_to_text = _build_speech_to_text()
+
+    # Tras la wake word se graba una ventana fija de audio con el comando. Como
+    # el micrófono entrega chunks de tamaño fijo, se traduce a cuántos leer.
+    command_seconds = float(os.getenv("STT_COMMAND_SECONDS", "5"))
+    chunks_to_capture = int(command_seconds * audio_config.sample_rate / audio_config.chunk_size)
 
     try:
         microphone.start()
@@ -69,8 +98,17 @@ def run() -> None:
 
             if wake_word.detect(audio):
                 logger.info("Wake word detectada!")
-                logger.info("Saliendo del programa...")
-                break
+
+                logger.info("Grabando comando (%.1f s)...", command_seconds)
+                frames = [microphone.read() for _ in range(chunks_to_capture)]
+                command_audio = b"".join(frames)
+
+                logger.info("Transcribiendo...")
+                text = speech_to_text.transcribe(command_audio)
+                logger.info("Comando: %s", text)
+
+                wake_word.reset()
+                logger.info("Esperando wake word...")
 
     except KeyboardInterrupt:
         pass
