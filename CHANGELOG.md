@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.4.0 (2026-10-22)
+
+### Features
+
+- **stt**: Añadir transcripción local con faster-whisper
+  ([`372430c`](https://github.com/comejia/voice-assistant/commit/372430c76e2e93d95f959e0dee67b920ccbc7f6e))
+
+
 ## v0.3.0 (2026-10-16)
 
 ### Chores
