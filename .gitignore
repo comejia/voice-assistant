@@ -15,6 +15,10 @@ wheels/
 # Audio
 *.wav
 
+# Modelos de Whisper descargados por faster-whisper (artefactos de terceros,
+# se bajan solos en el primer arranque).
+/models/whisper/
+
 # Proyectos de entrenamiento de wake word (heed): grabaciones, modelos .pt,
 # cache TTS, exports. Solo se versiona el modelo final en models/.
 /hola_deby/

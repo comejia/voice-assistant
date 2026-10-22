@@ -74,13 +74,7 @@ class HeedWakeWord(WakeWord):
         )
         self._input_name = self.session.get_inputs()[0].name
 
-        # Ventana deslizante con el último segundo de audio crudo (float32).
-        self._buffer = np.zeros(self.window_samples, dtype=np.float32)
-        # Frames consecutivos cuya probabilidad superó el threshold.
-        self._frames_above_threshold = 0
-        # Momento del último trigger, para el periodo refractario. Arranca muy
-        # atrás para no bloquear la primera detección.
-        self._last_trigger = float("-inf")
+        self.reset()
 
         logger.debug("HeedWakeWord cargado: phrase=%r threshold=%.3f", self.phrase, self.threshold)
 
@@ -135,3 +129,11 @@ class HeedWakeWord(WakeWord):
             return True
 
         return False
+
+    def reset(self) -> None:
+        # Ventana deslizante con el último segundo de audio crudo (float32).
+        self._buffer = np.zeros(self.window_samples, dtype=np.float32)
+        # Frames consecutivos cuya probabilidad superó el threshold.
+        self._frames_above_threshold = 0
+        # Arranca muy atrás para no bloquear la primera detección.
+        self._last_trigger = float("-inf")
