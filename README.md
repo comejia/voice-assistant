@@ -2,9 +2,11 @@
 
 Asistente de voz en Python que se activa con una palabra o frase personalizada
 (por ejemplo, *"Hola Deby"*) y resuelve pedidos del usuario mediante un
-**LLM / Agente** con acceso a herramientas y servidores **MCP** (correo, clima, etc.).
+**LLM / Agente**. El objetivo es dotarlo de herramientas y servidores **MCP**
+(correo, clima, etc.); esa etapa está planificada (ver
+[Cómo funciona](#-cómo-funciona)).
 
-## 🧩 Etapas de un asistente de voz
+## 🧩 Cómo funciona
 
 ```mermaid
 flowchart TB
@@ -17,14 +19,16 @@ flowchart TB
     G --> H[💬 Respuesta hablada]
 ```
 
-1. 🔑 **Wake word** — el asistente escucha de forma continua y se activa al
+1. 🎤 **Micrófono** — captura audio en continuo a 16 kHz, mono (formato que
+   requieren el wake word y el speech-to-text).
+2. 🔑 **Wake word** — el asistente escucha de forma continua y se activa al
    detectar la palabra clave (*"Deby"*).
-2. ⏺️ **Captura de voz** — una vez activado, graba el comando del usuario.
-3. 📝 **Speech-to-Text** — transcribe el audio a texto.
-4. 🤖 **LLM / Agente** — interpreta el pedido y decide qué herramientas o
-   servidores MCP usar para resolverlo.
-5. 🔧 **Herramientas / MCP** — ejecutan la acción (correo, clima, etc.).
-6. 🔊 **Text-to-Speech** — convierte la respuesta en voz.
+3. ⏺️ **Captura de voz** — una vez activado, graba el comando del usuario.
+4. 📝 **Speech-to-Text** — transcribe el audio a texto.
+5. 🤖 **LLM / Agente** — interpreta el pedido y genera la respuesta.
+6. 🔧 **Herramientas / MCP** *(pendiente)* — ejecutarán acciones (correo,
+   clima, etc.). El agente actual solo conversa; todavía no invoca herramientas.
+7. 🔊 **Text-to-Speech** — convierte la respuesta en voz.
 
 ## 📋 Requisitos
 
@@ -32,7 +36,7 @@ flowchart TB
   versiones superiores (3.12+).
 - 📦 [uv](https://docs.astral.sh/uv/) para gestión de dependencias
 
-## ⚙️ Instalación
+## 📦 Instalación
 
 ```bash
 uv sync
@@ -41,16 +45,31 @@ uv sync
 ## ▶️ Uso
 
 ```bash
-python -m voice_assistant
+uv run voice-assistant
 ```
 
-## 🔧 Configuración
+## ⚙️ Variables de entorno
 
-Las variables de entorno se cargan desde un archivo `.env`:
+Toda la configuración se pasa por variables de entorno, que se cargan desde un
+archivo `.env`. Partí del ejemplo:
 
 ```bash
 cp .env.example .env
 ```
+
+Cada subsección corresponde a una etapa del pipeline.
+
+| Variable    | Descripción                                        | Valor por defecto |
+|-------------|----------------------------------------------------|-------------------|
+| `LOG_LEVEL` | Nivel de logging (`DEBUG`, `INFO`, `WARNING`, ...) | `DEBUG`           |
+
+### 🎤 Audio / Micrófono
+
+La captura es fija: 16 kHz, mono, 16 bits. No hay variables de entorno para el
+micrófono porque esos valores los imponen el wake word y el speech-to-text; no
+deberían cambiarse.
+
+### 🔑 Wake word
 
 El asistente soporta dos motores de wake word, seleccionables con
 `WAKE_WORD_ENGINE`:
@@ -60,15 +79,27 @@ El asistente soporta dos motores de wake word, seleccionables con
 - `heed`: modelo custom entrenado con heed (ver
   [`docs/wake-word-training.md`](docs/wake-word-training.md)).
 
+| Variable           | Descripción                                 | Valor por defecto |
+|--------------------|---------------------------------------------|-------------------|
+| `WAKE_WORD_ENGINE` | Motor de detección: `openwakeword` o `heed` | `openwakeword`    |
+
+**Opciones del motor `openwakeword`:**
+
 | Variable              | Descripción                                                     | Valor por defecto |
 |-----------------------|-----------------------------------------------------------------|-------------------|
-| `LOG_LEVEL`           | Nivel de logging (`DEBUG`, `INFO`, `WARNING`, ...)              | `DEBUG`           |
-| `WAKE_WORD_ENGINE`    | Motor de detección: `openwakeword` o `heed`                     | `openwakeword`    |
-| `WAKE_WORD_MODEL`     | Modelo: nombre preentrenado / ruta a `.tflite` (openwakeword) o ruta al `.onnx` (heed) | `alexa` |
-| `WAKE_WORD_NAME`      | (openwakeword) Nombre de la wake word (key del modelo)          | `alexa`           |
-| `WAKE_WORD_INFERENCE_FRAMEWORK` | (openwakeword) Framework del modelo: `tflite` u `onnx` | `tflite`     |
-| `WAKE_WORD_THRESHOLD` | (openwakeword) Umbral de confianza (`0.0`–`1.0`)                | `0.5`             |
-| `WAKE_WORD_METADATA`  | (heed) Ruta al `wake.json` (incluye el threshold)               | `models/wake.json`|
+| `WAKE_WORD_MODEL`     | Nombre preentrenado (`alexa`, `hey_jarvis`, ...) o ruta a un `.tflite` custom | `alexa` |
+| `WAKE_WORD_NAME`      | Nombre de la wake word (key del modelo)                         | `alexa`           |
+| `WAKE_WORD_INFERENCE_FRAMEWORK` | Framework del modelo: `tflite` u `onnx`               | `tflite`          |
+| `WAKE_WORD_THRESHOLD` | Umbral de confianza (`0.0`–`1.0`). Más alto = menos falsos positivos | `0.5`        |
+
+**Opciones del motor `heed`:**
+
+| Variable              | Descripción                                                     | Valor por defecto |
+|-----------------------|-----------------------------------------------------------------|-------------------|
+| `WAKE_WORD_MODEL`     | Ruta al `.onnx` exportado (`models/wake.onnx`, o `models/wake.int8.onnx` en ARM) | `models/wake.onnx` |
+| `WAKE_WORD_METADATA`  | Ruta al `wake.json` (contrato de preprocesado; incluye el threshold calibrado) | `models/wake.json` |
+| `WAKE_WORD_THRESHOLD` | (opcional) Sobrescribe el threshold del `wake.json`             | *(del modelo)*    |
+| `WAKE_WORD_NAME`      | (opcional) Frase esperada; si no coincide con la del modelo, el asistente no arranca | *(del modelo)* |
 
 ### 📝 Speech-to-Text
 
@@ -107,6 +138,30 @@ mismo código sirve tanto para OpenAI (cloud) como para un modelo local vía
 > 💡 Para usar un modelo local con Ollama (100% offline): `LLM_BASE_URL=http://localhost:11434/v1`,
 > `LLM_API_KEY=ollama` y `LLM_MODEL` al nombre del modelo que tengas descargado.
 
+### 🔧 Herramientas / MCP
+
+*Pendiente.* El agente todavía no ejecuta herramientas ni se conecta a
+servidores MCP, por lo que no hay variables de entorno para esta etapa aún.
+
+### 🔊 Text-to-Speech
+
+La respuesta del agente se convierte en voz con
+[Piper](https://github.com/OHF-Voice/piper1-gpl) (motor neuronal ONNX), 100%
+local y en CPU. La voz se descarga una vez y se cachea en `models/piper`:
+
+```bash
+uv run python -m piper.download_voices es_AR-daniela-high --data-dir models/piper
+```
+
+Hay más voces en español (`es_ES-davefx-medium`, `es_ES-sharvard-medium`,
+`es_MX-claude-high`, ...); mirá el
+[catálogo de voces](https://github.com/OHF-Voice/piper1-gpl/blob/main/docs/VOICES.md).
+
+| Variable           | Descripción                                                        | Valor por defecto                        |
+|--------------------|--------------------------------------------------------------------|------------------------------------------|
+| `TTS_MODEL`        | Ruta al modelo de voz `.onnx` (su `.onnx.json` va junto al archivo) | `models/piper/es_AR-daniela-high.onnx`   |
+| `TTS_LENGTH_SCALE` | Velocidad del habla (`1.0` nominal; mayor = más lento, menor = más rápido) | `1.0`                                    |
+
 ## 🔑 Wake word personalizada
 
 ¿Querés entrenar tu propia wake word (p. ej. *"Hola Deby"*)? Mirá
@@ -116,8 +171,8 @@ mismo código sirve tanto para OpenAI (cloud) como para un modelo local vía
 
 ```bash
 # Pruebas unitarias
-pytest
+uv run pytest
 
 # Pruebas de integración (requieren micrófono y audio de ejemplo)
-pytest -m integration
+uv run pytest -m integration
 ```
