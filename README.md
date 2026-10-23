@@ -86,6 +86,27 @@ CTranslate2), 100% local. El modelo se descarga automáticamente a
 | `STT_LANGUAGE`        | Idioma (`es`, `en`, ...). Vacío = detección automática          | `es`              |
 | `STT_COMMAND_SECONDS` | Segundos de audio a capturar tras la wake word                  | `5`               |
 
+### 🤖 LLM / Agente
+
+El comando transcrito se envía a un **LLM** que interpreta el pedido y genera la
+respuesta. Se usa un cliente compatible con la API de OpenAI, por lo que el
+mismo código sirve tanto para OpenAI (cloud) como para un modelo local vía
+[Ollama](https://ollama.com/) u otros proveedores compatibles (Groq, DeepSeek,
+...): para cambiar de proveedor solo se ajustan `LLM_MODEL`, `LLM_API_KEY` y
+`LLM_BASE_URL`.
+
+| Variable             | Descripción                                                          | Valor por defecto |
+|----------------------|----------------------------------------------------------------------|-------------------|
+| `LLM_MODEL`          | Modelo (`gpt-4o-mini`, `gpt-4o`, `llama3.2`, ...)                     | `gpt-4o-mini`     |
+| `LLM_API_KEY`        | Credencial del proveedor. Servidores locales sin auth: cualquier valor | *(vacío)*       |
+| `LLM_BASE_URL`       | Endpoint de la API. Vacío = OpenAI. Ollama: `http://localhost:11434/v1` | *(vacío)*      |
+| `LLM_TEMPERATURE`    | Aleatoriedad del muestreo (`0.0`–`2.0`). Más bajo = más determinista | `0.7`             |
+| `AGENT_SYSTEM_PROMPT`| Instrucción de sistema (personalidad/estilo). Vacío = default        | *(vacío)*         |
+| `AGENT_KEEP_HISTORY` | `true` recuerda la conversación previa; `false` = comandos sueltos   | `true`            |
+
+> 💡 Para usar un modelo local con Ollama (100% offline): `LLM_BASE_URL=http://localhost:11434/v1`,
+> `LLM_API_KEY=ollama` y `LLM_MODEL` al nombre del modelo que tengas descargado.
+
 ## 🔑 Wake word personalizada
 
 ¿Querés entrenar tu propia wake word (p. ej. *"Hola Deby"*)? Mirá

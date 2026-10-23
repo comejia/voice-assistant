@@ -4,6 +4,8 @@ import os
 import pyaudio
 from dotenv import load_dotenv
 
+from voice_assistant.agent import Agent, AgentConfig, SimpleAgent
+from voice_assistant.llm import LLMConfig, LLMProvider, OpenAIProvider
 from voice_assistant.speech_to_text import (
     FasterWhisperSTT,
     SpeechToText,
@@ -41,9 +43,9 @@ def _build_wake_word() -> WakeWord:
         return HeedWakeWord(wake_word_config=config)
 
     # Motor por defecto: openwakeword.
-    import openwakeword
+    from openwakeword import utils
 
-    openwakeword.utils.download_models()
+    utils.download_models()
     threshold = os.getenv("WAKE_WORD_THRESHOLD")
     wake_word_config = WakeWordConfig(
         model=os.getenv("WAKE_WORD_MODEL", "alexa"),
@@ -73,6 +75,45 @@ def _build_speech_to_text() -> SpeechToText:
     return FasterWhisperSTT(config=config)
 
 
+def _build_llm() -> LLMProvider:
+    """Instancia el proveedor de modelo de lenguaje.
+
+    La configuración se toma de las variables de entorno LLM_*. Se usa un cliente compatible
+    con la API de OpenAI, que sirve tanto para OpenAI como para servidores locales (Ollama) u
+    otros proveedores: solo cambia LLM_BASE_URL.
+    """
+    base_url = os.getenv("LLM_BASE_URL") or None
+    config = LLMConfig(
+        model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
+        api_key=os.getenv("LLM_API_KEY", ""),
+        base_url=base_url,
+        temperature=float(os.getenv("LLM_TEMPERATURE", "0.7")),
+    )
+    logger.debug(
+        "Proveedor LLM: openai-compatible (%s @ %s)",
+        config.model,
+        config.base_url or "<default OpenAI>",
+    )
+    return OpenAIProvider(config=config)
+
+
+def _build_agent(llm: LLMProvider) -> Agent:
+    """Instancia el agente conversacional sobre un proveedor LLM.
+
+    La configuración se toma de las variables de entorno AGENT_*.
+    """
+    system_prompt = os.getenv("AGENT_SYSTEM_PROMPT")
+    keep_history = os.getenv("AGENT_KEEP_HISTORY", "true").lower() == "true"
+    # Si no se define AGENT_SYSTEM_PROMPT, se usa el default de AgentConfig.
+    config = (
+        AgentConfig(keep_history=keep_history)
+        if system_prompt is None
+        else AgentConfig(system_prompt=system_prompt, keep_history=keep_history)
+    )
+    logger.debug("Agente: keep_history=%s", config.keep_history)
+    return SimpleAgent(llm=llm, config=config)
+
+
 def run() -> None:
     audio_config = AudioConfig(
         sample_rate=16_000, channels=1, format=pyaudio.paInt16, chunk_size=1280
@@ -81,6 +122,8 @@ def run() -> None:
     microphone = PyAudioMicrophone(config=audio_config)
     wake_word = _build_wake_word()
     speech_to_text = _build_speech_to_text()
+    llm = _build_llm()
+    agent = _build_agent(llm)
 
     # Tras la wake word se graba una ventana fija de audio con el comando. Como
     # el micrófono entrega chunks de tamaño fijo, se traduce a cuántos leer.
@@ -106,6 +149,13 @@ def run() -> None:
                 logger.info("Transcribiendo...")
                 text = speech_to_text.transcribe(command_audio)
                 logger.info("Comando: %s", text)
+
+                if text:
+                    logger.info("Consultando al agente...")
+                    response = agent.run(text)
+                    logger.info("Respuesta: %s", response)
+                else:
+                    logger.info("No se detectó comando, se ignora.")
 
                 wake_word.reset()
                 logger.info("Esperando wake word...")
