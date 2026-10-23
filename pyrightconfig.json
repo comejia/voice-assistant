@@ -1,0 +1,28 @@
+{
+  "include": [
+    "src",
+    "tests"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/.venv",
+    "**/venv",
+    "**/.pytest_cache",
+    "**/.ruff_cache"
+  ],
+  "venvPath": ".",
+  "venv": ".venv",
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "standard",
+  "executionEnvironments": [
+    {
+      "root": "src"
+    },
+    {
+      "root": "tests",
+      "extraPaths": [
+        "src"
+      ]
+    }
+  ]
+}

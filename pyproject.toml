@@ -11,6 +11,7 @@ dependencies = [
     "faster-whisper>=1.0.0",
     "heed-wakeword>=0.1.4",
     "numpy<2",
+    "openai>=3.37.0",
     "openwakeword>=0.6.0",
     "pyaudio>=0.2.14",
     "python-dotenv>=1.2.4",
@@ -30,6 +31,7 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "pre-commit>=4.6.2",
+    "pyright>=1.1.414",
     "pytest>=9.1.1",
     "ruff>=0.16.10",
     # Extras de heed-wakeword SOLO para entrenar/exportar el modelo custom
