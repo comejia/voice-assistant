@@ -1,5 +1,5 @@
 ---
-include: always
+inclusion: always
 ---
 
 # Conventional Commits
