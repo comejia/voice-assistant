@@ -19,6 +19,10 @@ wheels/
 # se bajan solos en el primer arranque).
 /models/whisper/
 
+# Voces de Piper descargadas (artefactos de terceros, se bajan con
+# python -m piper.download_voices).
+/models/piper/
+
 # Proyectos de entrenamiento de wake word (heed): grabaciones, modelos .pt,
 # cache TTS, exports. Solo se versiona el modelo final en models/.
 /hola_deby/

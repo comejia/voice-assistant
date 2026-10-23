@@ -11,6 +11,7 @@ from voice_assistant.speech_to_text import (
     SpeechToText,
     SpeechToTextConfig,
 )
+from voice_assistant.tts import PiperTTS, TextToSpeech, TextToSpeechConfig
 from voice_assistant.voice import AudioConfig, PyAudioMicrophone
 from voice_assistant.wake_word import (
     HeedWakeWord,
@@ -114,6 +115,20 @@ def _build_agent(llm: LLMProvider) -> Agent:
     return SimpleAgent(llm=llm, config=config)
 
 
+def _build_text_to_speech() -> TextToSpeech:
+    """Instancia el motor de text-to-speech.
+
+    La configuración se toma de las variables de entorno TTS_*. Actualmente solo
+    hay un motor disponible (Piper, neuronal y local en CPU).
+    """
+    config = TextToSpeechConfig(
+        model=os.getenv("TTS_MODEL", "models/piper/es_AR-daniela-high.onnx"),
+        length_scale=float(os.getenv("TTS_LENGTH_SCALE", "1.0")),
+    )
+    logger.debug("Motor de text-to-speech: piper (%s)", config.model)
+    return PiperTTS(config=config)
+
+
 def run() -> None:
     audio_config = AudioConfig(
         sample_rate=16_000, channels=1, format=pyaudio.paInt16, chunk_size=1280
@@ -124,6 +139,7 @@ def run() -> None:
     speech_to_text = _build_speech_to_text()
     llm = _build_llm()
     agent = _build_agent(llm)
+    text_to_speech = _build_text_to_speech()
 
     # Tras la wake word se graba una ventana fija de audio con el comando. Como
     # el micrófono entrega chunks de tamaño fijo, se traduce a cuántos leer.
@@ -154,6 +170,7 @@ def run() -> None:
                     logger.info("Consultando al agente...")
                     response = agent.run(text)
                     logger.info("Respuesta: %s", response)
+                    text_to_speech.say(response)
                 else:
                     logger.info("No se detectó comando, se ignora.")
 
@@ -166,6 +183,7 @@ def run() -> None:
     finally:
         microphone.close()
         logger.info("Micrófono cerrado")
+        text_to_speech.close()
 
 
 def main() -> None:
