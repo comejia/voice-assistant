@@ -19,3 +19,10 @@ repos:
       - id: ruff-format
         types_or: [ python, pyi, jupyter ]
 
+  # Type checking con pyright. El hook instala su propia copia de pyright, así que
+  # no requiere tenerlo en el proyecto ni en el sistema.
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.414
+    hooks:
+      - id: pyright
+
