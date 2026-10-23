@@ -34,7 +34,9 @@ def main() -> None:
     finally:
         microphone.close()
 
-    with wave.open(OUTPUT_FILE, "wb") as wav:
+    # El stub de wave.open aún tipa el parámetro como str|IO; en runtime acepta
+    # os.PathLike (Path) desde hace varias versiones de Python.
+    with wave.open(OUTPUT_FILE, "wb") as wav:  # type: ignore[arg-type]
         wav.setnchannels(audio_config.channels)
         wav.setsampwidth(pyaudio.get_sample_size(audio_config.format))
         wav.setframerate(audio_config.sample_rate)

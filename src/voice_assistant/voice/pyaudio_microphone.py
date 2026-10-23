@@ -25,6 +25,8 @@ class PyAudioMicrophone(Microphone):
         logger.debug("Stream de audio iniciado")
 
     def read(self) -> bytes:
+        if self.stream is None:
+            raise RuntimeError("El micrófono no está iniciado; llamá a start() primero")
         return self.stream.read(
             self.config.chunk_size,
             exception_on_overflow=False,

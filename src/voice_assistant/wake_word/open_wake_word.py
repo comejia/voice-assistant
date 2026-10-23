@@ -50,7 +50,9 @@ class OpenWakeWord(WakeWord):
 
         predictions = self.model.predict(frame)
 
-        score = predictions[self.config.wake_word]
+        # El stub de openwakeword tipa predict() de forma imprecisa; en runtime
+        # devuelve un dict {wake_word: score} indexable por str.
+        score = predictions[self.config.wake_word]  # type: ignore[index]
         logger.debug("Score '%s': %.4f", self.config.wake_word, score)
 
         return score > self.threshold
