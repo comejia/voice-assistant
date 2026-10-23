@@ -2,6 +2,27 @@
 
 <!-- version list -->
 
+## v0.6.0 (2026-10-23)
+
+### Chores
+
+- Versionar config de Kiro (lsp y mcp)
+  ([`05379ac`](https://github.com/comejia/voice-assistant/commit/05379ac8e9c359b5180fd158f47c13c2d6c9e0f0))
+
+### Documentation
+
+- Agregar agents.md para asistentes de ia
+  ([`8fcca47`](https://github.com/comejia/voice-assistant/commit/8fcca47cbeba09d047e85b16ebe6d7124cd4f4cb))
+
+- Reestructurar readme y documentar el tts
+  ([`fa4bd51`](https://github.com/comejia/voice-assistant/commit/fa4bd51457807ea3e90add546e09eac43bdbd2ad))
+
+### Features
+
+- **tts**: Integrar piper como motor de text-to-speech
+  ([`50ee320`](https://github.com/comejia/voice-assistant/commit/50ee3200e3956d36ae8ccc8fb9f2fa7a9e798b2b))
+
+
 ## v0.5.0 (2026-10-23)
 
 ### Bug Fixes
