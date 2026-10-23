@@ -2,6 +2,32 @@
 
 <!-- version list -->
 
+## v0.5.0 (2026-10-23)
+
+### Bug Fixes
+
+- Resolver errores de tipos de pyright
+  ([`8a5399f`](https://github.com/comejia/voice-assistant/commit/8a5399ffe8c97a9666056293fc8d34c5b7df5430))
+
+### Chores
+
+- Añadir pyright como hook de pre-commit
+  ([`cfa70ca`](https://github.com/comejia/voice-assistant/commit/cfa70cafa64aa400e00c48190a5e1d29ca16f7d2))
+
+- Configurar pyright para el proyecto
+  ([`5c3e181`](https://github.com/comejia/voice-assistant/commit/5c3e181a22a1ce1fc1e4c7bd4bd1ac3b38830de9))
+
+### Documentation
+
+- Añadir steering ponytail y corregir frontmatter
+  ([`ea9c718`](https://github.com/comejia/voice-assistant/commit/ea9c718c5fb887344cb370f69e5d79bc70203773))
+
+### Features
+
+- Integrar LLM y agente en el pipeline
+  ([`c2c0e68`](https://github.com/comejia/voice-assistant/commit/c2c0e6886727da37ace8accd73ee6de65d1e0032))
+
+
 ## v0.4.0 (2026-10-22)
 
 ### Features
